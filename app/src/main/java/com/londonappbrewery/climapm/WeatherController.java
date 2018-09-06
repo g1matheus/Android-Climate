@@ -91,20 +91,31 @@ public class WeatherController extends AppCompatActivity {
         Intent myIntent = getIntent();
         String city = myIntent.getStringExtra("City");
 
-        Log.d("Clima", "Getting weather for current location");
-        getWeatherForCurrentLocation();
-
+        // If city isn't blank or null
+        // Updates city name or uses current name
+        if (city != null) {
+            Log.d("Clima", "Getting weather for current location");
+            getWeatherForNewCity(city);
+        } else {
+            Log.d("Clima", "Getting weather for current location");
+            getWeatherForCurrentLocation();
+        }
     }
 
 
     // TODO: Add getWeatherForNewCity(String city) here:
+    private void getWeatherForNewCity(String city) {
+        RequestParams params = new RequestParams();
+        params.put("q", city);
+        params.put("appid", APP_ID);
+        letsDoSomeNetworking(params);
+
+    }
 
 
     // TODO: Add getWeatherForCurrentLocation() here:
     private void getWeatherForCurrentLocation() {
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -197,8 +208,6 @@ public class WeatherController extends AppCompatActivity {
                 // Passing the JSON information to our model
                 WeatherDataModel weatherData = WeatherDataModel.fromJson(response);
                 updateUI(weatherData);
-
-
             }
 
             @Override
@@ -211,10 +220,7 @@ public class WeatherController extends AppCompatActivity {
         });
     }
 
-
-
     // TODO: Add updateUI() here:
-
     // Update mCityLabel and mTemperatureLabel in AppView
     private void updateUI(WeatherDataModel weather) {
         mCityLabel.setText(weather.getCity());
@@ -225,10 +231,13 @@ public class WeatherController extends AppCompatActivity {
         mWeatherImage.setImageResource(resourceID);
     }
 
-
-
     // TODO: Add onPause() here:
 
 
+    @Override
+    protected void onPause() {
+        super.onPause();
 
+        if (mLocationManager != null) mLocationManager.removeUpdates(mLocationListener);
+    }
 }
